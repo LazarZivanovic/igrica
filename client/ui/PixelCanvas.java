@@ -10,7 +10,7 @@ public class PixelCanvas extends JPanel {
     private static final int GRID_SIZE = 50;
     private static final int PIXEL_SIZE = 12;
     private int[][] gridData = new int[GRID_SIZE][GRID_SIZE];
-    private boolean igraAktivna = true;
+    private boolean gameActive = true;
     private ScorePanel scorePanel;
     private GameWindow gameWindow;
 
@@ -24,7 +24,7 @@ public class PixelCanvas extends JPanel {
         addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                if (!igraAktivna) return;
+                if (!gameActive) return;
 
                 int col = e.getX() / PIXEL_SIZE;
                 int row = e.getY() / PIXEL_SIZE;
@@ -32,20 +32,20 @@ public class PixelCanvas extends JPanel {
                 if (col >= 0 && col < GRID_SIZE && row >= 0 && row < GRID_SIZE) {
                     // Šaljemo klik mrežnom handleru umjesto lokalnog bojenja
                     if (gameWindow.getNetworkHandler() != null) {
-                        gameWindow.getNetworkHandler().posaljiKlik(row, col);
+                        gameWindow.getNetworkHandler().sendClick(row, col);
                     }
                 }
             }
         });
     }
 
-    public void updateGrid(int[][] noviGrid) {
-        this.gridData = noviGrid;
+    public void updateGrid(int[][] newGrid) {
+        this.gridData = newGrid;
         repaint();
     }
 
-    public void završiIgru() {
-        this.igraAktivna = false;
+    public void endGame() {
+        this.gameActive = false;
     }
 
     @Override

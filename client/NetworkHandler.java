@@ -12,14 +12,14 @@ public class NetworkHandler {
     private ObjectOutputStream out;
     private ObjectInputStream in;
     private GameWindow gameWindow;
-    private String mojeIme;
+    private String myName;
 
     public NetworkHandler(String host, int port) {
         try {
             // 1. Iskače prozor za ime čim se pokrene klijent
-            mojeIme = JOptionPane.showInputDialog(null, "Unesi svoje ime:", "Prijava na server", JOptionPane.QUESTION_MESSAGE);
-            if (mojeIme == null || mojeIme.trim().isEmpty()) {
-                mojeIme = "Igrač_" + (int)(Math.random() * 1000);
+            myName = JOptionPane.showInputDialog(null, "Unesi svoje ime:", "Prijava na server", JOptionPane.QUESTION_MESSAGE);
+            if (myName == null || myName.trim().isEmpty()) {
+                myName = "Igrač_" + (int)(Math.random() * 1000);
             }
 
             // 2. Spajanje na socket
@@ -34,7 +34,7 @@ public class NetworkHandler {
             gameWindow = new GameWindow(this);
 
             // 4. Šaljemo ime serveru
-            posaljiPoruku(new Message(Message.Type.PRIJAVA, mojeIme));
+            sendMessage(new Message(Message.Type.JOIN, myName));
 
             // 5. Pokrećemo pozadinsku nit da sluša server
             new Thread(this::listenToServer).start();
@@ -55,22 +55,22 @@ public class NetworkHandler {
                     gameWindow.getPixelCanvas().updateGrid(msg.getGrid());
 
                     // Osvežavamo tabelu sa skorovima
-                    gameWindow.getScorePanel().azurirajSkorove(msg.getSkor1(), msg.getSkor2());
+                    gameWindow.getScorePanel().updateScores(msg.getScore1(), msg.getScore2());
                 }
             }
         } catch (Exception e) {
             System.out.println("[KLIJENT] Veza sa serverom je prekinuta.");
         } finally {
-            zatvoriSve();
+            closeAll();
         }
     }
 
-    public void posaljiKlik(int row, int col) {
-        Message klikPoruka = new Message(Message.Type.KLIK, row, col);
-        posaljiPoruku(klikPoruka);
+    public void sendClick(int row, int col) {
+        Message clickMessage = new Message(Message.Type.CLICK, row, col);
+        sendMessage(clickMessage);
     }
 
-    private synchronized void posaljiPoruku(Message msg) {
+    private synchronized void sendMessage(Message msg) {
         try {
             out.writeObject(msg);
             out.flush();
@@ -79,7 +79,7 @@ public class NetworkHandler {
         }
     }
 
-    private void zatvoriSve() {
+    private void closeAll() {
         try {
             if (in != null) in.close();
             if (out != null) out.close();
@@ -89,7 +89,7 @@ public class NetworkHandler {
         }
     }
 
-    public String getMojeIme() {
-        return mojeIme;
+    public String getMyName() {
+        return myName;
     }
 }

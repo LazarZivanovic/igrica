@@ -13,7 +13,7 @@ public class GameWindow extends JFrame {
     private JLabel timeLabel;
     private NetworkHandler networkHandler;
 
-    private int preostaloVreme = 42;
+    private int remainingTime = 42;
 
     // Konstruktor sada ispravno prima mrežni handler
     public GameWindow(NetworkHandler networkHandler) {
@@ -28,12 +28,12 @@ public class GameWindow extends JFrame {
         topPanel.setBackground(new Color(45, 45, 45));
 
         timerBar = new JProgressBar(0, 42);
-        timerBar.setValue(preostaloVreme);
+        timerBar.setValue(remainingTime);
         timerBar.setForeground(new Color(76, 154, 42));
         timerBar.setBackground(Color.DARK_GRAY);
         timerBar.setBorderPainted(false);
 
-        timeLabel = new JLabel("00:" + preostaloVreme, SwingConstants.CENTER);
+        timeLabel = new JLabel("00:" + remainingTime, SwingConstants.CENTER);
         timeLabel.setForeground(Color.WHITE);
         timeLabel.setFont(new Font("Arial", Font.BOLD, 14));
         timeLabel.setBorder(BorderFactory.createEmptyBorder(5, 0, 5, 0));
@@ -57,16 +57,16 @@ public class GameWindow extends JFrame {
 
         // Logika tajmera
         Timer tajmer = new Timer(1000, e -> {
-            if (preostaloVreme > 0) {
-                preostaloVreme--;
-                timerBar.setValue(preostaloVreme);
-                timeLabel.setText(String.format("00:%02d", preostaloVreme));
+            if (remainingTime > 0) {
+                remainingTime--;
+                timerBar.setValue(remainingTime);
+                timeLabel.setText(String.format("00:%02d", remainingTime));
             } else {
                 ((Timer)e.getSource()).stop();
-                pixelCanvas.završiIgru();
+                pixelCanvas.endGame();
 
-                int skor1 = scorePanel.getMojSkor();
-                int skor2 = scorePanel.getKolegaSkor();
+                int skor1 = scorePanel.getMyScore();
+                int skor2 = scorePanel.getOpponentScore();
 
                 String poruka = "=== IGRA JE ZAVRŠENA ===\n\n" +
                         "Konačni učinak:\n" +

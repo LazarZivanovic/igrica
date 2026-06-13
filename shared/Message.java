@@ -7,23 +7,23 @@ public class Message implements Serializable {
 
     // Tipovi poruka koje klijent i server šalju jedan drugom
     public enum Type {
-        PRIJAVA,       // Klijent šalje svoje ime čim se poveže
-        KLIK,          // Klijent šalje koordinate kada klikne na kvadrat
+        JOIN,       // Klijent šalje svoje ime čim se poveže
+        CLICK,          // Klijent šalje koordinate kada klikne na kvadrat
         UPDATE_GAME    // Server šalje svima osveženu matricu i skorove
     }
 
     private Type type;
-    private String ime;
+    private String name;
     private int row;
     private int col;
     private int[][] grid;
-    private int skor1;
-    private int skor2;
+    private int score1;
+    private int score2;
 
     // Konstruktor za prijavu igrača (šalje se samo ime)
-    public Message(Type type, String ime) {
+    public Message(Type type, String name) {
         this.type = type;
-        this.ime = ime;
+        this.name = name;
     }
 
     // Konstruktor za klik na piksel (šalje se gde je kliknuto)
@@ -34,19 +34,19 @@ public class Message implements Serializable {
     }
 
     // Konstruktor kojim server šalje osveženo stanje cele igre svima
-    public Message(Type type, int[][] grid, int skor1, int skor2) {
+    public Message(Type type, int[][] grid, int score1, int score2) {
         this.type = type;
         this.grid = grid;
-        this.skor1 = skor1;
-        this.skor2 = skor2;
+        this.score1 = score1;
+        this.score2 = score2;
     }
 
     // Getteri da bismo mogli da pročitamo podatke iz poruke
     public Type getType() { return type; }
-    public String getIme() { return ime; }
+    public String getName() { return name; }
     public int getRow() { return row; }
     public int getCol() { return col; }
     public int[][] getGrid() { return grid; }
-    public int getSkor1() { return skor1; }
-    public int getSkor2() { return skor2; }
+    public int getScore1() { return score1; }
+    public int getScore2() { return score2; }
 }
