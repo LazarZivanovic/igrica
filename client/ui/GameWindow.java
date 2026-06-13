@@ -1,6 +1,7 @@
 package client.ui;
 
 import client.NetworkHandler;
+import shared.Config;
 
 import javax.swing.*;
 import java.awt.*;
@@ -13,7 +14,7 @@ public class GameWindow extends JFrame {
     private JLabel timeLabel;
     private NetworkHandler networkHandler;
 
-    private int remainingTime = 42;
+    private int remainingTime = Config.GAME_DURATION;
 
     // Konstruktor sada ispravno prima mrežni handler
     public GameWindow(NetworkHandler networkHandler) {
@@ -27,7 +28,7 @@ public class GameWindow extends JFrame {
         JPanel topPanel = new JPanel(new BorderLayout());
         topPanel.setBackground(new Color(45, 45, 45));
 
-        timerBar = new JProgressBar(0, 42);
+        timerBar = new JProgressBar(0, Config.GAME_DURATION);
         timerBar.setValue(remainingTime);
         timerBar.setForeground(new Color(76, 154, 42));
         timerBar.setBackground(Color.DARK_GRAY);

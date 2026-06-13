@@ -1,5 +1,7 @@
 package client.ui;
 
+import shared.Config;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
@@ -7,7 +9,7 @@ import java.awt.event.MouseEvent;
 
 public class PixelCanvas extends JPanel {
 
-    private static final int GRID_SIZE = 50;
+    private static final int GRID_SIZE = Config.BOARD_SIZE;
     private static final int PIXEL_SIZE = 12;
     private int[][] gridData = new int[GRID_SIZE][GRID_SIZE];
     private boolean gameActive = true;
