@@ -1,13 +1,14 @@
 package client.ui;
 
 import client.NetworkHandler;
+
 import javax.swing.*;
 import java.awt.*;
 
 public class GameWindow extends JFrame {
 
-    private PixelCanvas pixelCanvas;
-    private ScorePanel scorePanel;
+    private client.ui.PixelCanvas pixelCanvas;
+    private client.ui.ScorePanel scorePanel;
     private JProgressBar timerBar;
     private JLabel timeLabel;
     private NetworkHandler networkHandler;

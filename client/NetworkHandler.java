@@ -1,11 +1,11 @@
 package client;
-
-import client.ui.GameWindow;
 import shared.Message;
-
-import java.io.*;
+import client.ui.GameWindow;
+import javax.swing.*;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.Socket;
-import javax.swing.JOptionPane;
 
 public class NetworkHandler {
     private Socket socket;
