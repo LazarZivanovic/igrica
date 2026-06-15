@@ -16,6 +16,7 @@ public class GameServer {
     public void start() throws IOException{
         ServerSocket serverSocket = new ServerSocket(Config.PORT);
         System.out.println("[ SERVER ] Is running on port "+ Config.PORT);
+        new Thread(new TimerThread(broadcaster, gameState, Config.GAME_DURATION)).start();
         while(true){
             Socket clientSocket = serverSocket.accept();
             System.out.println("[ SERVER ] New player is connected!");

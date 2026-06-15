@@ -21,6 +21,7 @@ public class Message implements Serializable {
     private int col;
     private int[][] grid;
     private Map<String, Integer> scores;
+    private int remainingTime;
     // Konstruktor za prijavu igrača (šalje se samo ime)
     public Message(Type type, String name) {
         this.type = type;
@@ -39,6 +40,11 @@ public class Message implements Serializable {
         this.grid = boardCopy;
         this.scores = scores;
     }
+    //Konstruktor za timer
+    public Message(Type type, int remainingTime) {
+        this.type = type;
+        this.remainingTime = remainingTime;
+    }
     // Getteri da bismo mogli da pročitamo podatke iz poruke
     public Type getType() { return type; }
     public String getName() { return name; }
@@ -46,4 +52,5 @@ public class Message implements Serializable {
     public int getCol() { return col; }
     public int[][] getGrid() { return grid; }
     public Map<String, Integer> getScores(){return scores;}
+    public int getRemainingTime(){return remainingTime;}
 }

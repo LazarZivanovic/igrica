@@ -34,7 +34,7 @@ public class ClientHandler implements Runnable{
                 }else if (msg.getType() == Message.Type.CLICK){
                     gameState.paintPixel(msg.getRow(), msg.getCol(), playerName);
                     broadcaster.broadcast(new Message(
-                            Message.Type.CLICK,
+                            Message.Type.UPDATE_GAME,
                             gameState.getBoardCopy(),
                             gameState.getScores()
                     ));
