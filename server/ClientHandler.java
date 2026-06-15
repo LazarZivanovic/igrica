@@ -13,11 +13,13 @@ public class ClientHandler implements Runnable{
     private final Broadcaster broadcaster;
     private NetworkSerializer serializer;
     private  String playerName;
+    private final LobbyManager lobby;
 
-    public ClientHandler(Socket socket, GameState gameState, Broadcaster broadcaster){
+    public ClientHandler(Socket socket, GameState gameState, Broadcaster broadcaster, LobbyManager lobby){
         this.socket = socket;
         this.gameState = gameState;
         this.broadcaster = broadcaster;
+        this.lobby = lobby;
     }
 
     @Override
@@ -28,6 +30,10 @@ public class ClientHandler implements Runnable{
                 Message msg = serializer.receive();
                 if (msg.getType()==Message.Type.JOIN){
                     playerName = msg.getName();
+                    if (!lobby.playerJoined()){
+                        sendMessage(new Message(Message.Type.GAME_OVER, null, null));
+                        return;
+                    }
                     gameState.addPlayer(playerName);
                     broadcaster.addClient(this);
                     System.out.println("[ SERVER ] "+ playerName +" is connected!");
