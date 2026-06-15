@@ -63,7 +63,7 @@ public class NetworkHandler {
                     gameWindow.getPixelCanvas().updateGrid(msg.getGrid());
 
                     // Osvežavamo tabelu sa skorovima
-                    gameWindow.getScorePanel().updateScores(msg.getScore1(), msg.getScore2());
+                    gameWindow.getScorePanel().updateScores(msg.getScores());
                 }
             }
         } catch (Exception e) {
