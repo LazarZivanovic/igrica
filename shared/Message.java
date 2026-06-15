@@ -1,6 +1,7 @@
 package shared;
 
 import java.io.Serializable;
+import java.util.Map;
 
 public class Message implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -9,7 +10,9 @@ public class Message implements Serializable {
     public enum Type {
         JOIN,       // Klijent šalje svoje ime čim se poveže
         CLICK,          // Klijent šalje koordinate kada klikne na kvadrat
-        UPDATE_GAME    // Server šalje svima osveženu matricu i skorove
+        UPDATE_GAME,    // Server šalje svima osveženu matricu i skorove,
+        TIMER,          // Server salje preostalo vreme svake sekunde
+        GAME_OVER       // Server salje kad istekne vreme
     }
 
     private Type type;
@@ -17,9 +20,8 @@ public class Message implements Serializable {
     private int row;
     private int col;
     private int[][] grid;
-    private int score1;
-    private int score2;
-
+    private Map<String, Integer> scores;
+    private int remainingTime;
     // Konstruktor za prijavu igrača (šalje se samo ime)
     public Message(Type type, String name) {
         this.type = type;
@@ -32,21 +34,23 @@ public class Message implements Serializable {
         this.row = row;
         this.col = col;
     }
-
     // Konstruktor kojim server šalje osveženo stanje cele igre svima
-    public Message(Type type, int[][] grid, int score1, int score2) {
+    public Message(Type type, int[][] boardCopy, Map<String, Integer> scores) {
         this.type = type;
-        this.grid = grid;
-        this.score1 = score1;
-        this.score2 = score2;
+        this.grid = boardCopy;
+        this.scores = scores;
     }
-
+    //Konstruktor za timer
+    public Message(Type type, int remainingTime) {
+        this.type = type;
+        this.remainingTime = remainingTime;
+    }
     // Getteri da bismo mogli da pročitamo podatke iz poruke
     public Type getType() { return type; }
     public String getName() { return name; }
     public int getRow() { return row; }
     public int getCol() { return col; }
     public int[][] getGrid() { return grid; }
-    public int getScore1() { return score1; }
-    public int getScore2() { return score2; }
+    public Map<String, Integer> getScores(){return scores;}
+    public int getRemainingTime(){return remainingTime;}
 }

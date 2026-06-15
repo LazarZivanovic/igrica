@@ -2,6 +2,7 @@ package client.ui;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.Map;
 
 public class ScorePanel extends JPanel {
 
@@ -66,9 +67,8 @@ public class ScorePanel extends JPanel {
         add(red2);
     }
 
-    public void updateScores(int skor1, int skor2) {
-        this.myScore = skor1;
-        this.opponentScore = skor2;
+    public void updateScores(Map<String, Integer> scores) {
+        this.scores = scores;
         this.labelScore1.setText(String.valueOf(skor1));
         this.labelScore2.setText(String.valueOf(skor2));
     }
