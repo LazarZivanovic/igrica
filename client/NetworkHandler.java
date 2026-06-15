@@ -18,7 +18,8 @@ public class NetworkHandler {
         try {
             // 1. Iskače prozor za ime čim se pokrene klijent
             myName = JOptionPane.showInputDialog(null, "Unesi svoje ime:", "Prijava na server", JOptionPane.QUESTION_MESSAGE);
-            if (myName == null || myName.trim().isEmpty()) {
+            if (myName == null)return;
+            if (myName.trim().isEmpty()) {
                 myName = "Igrač_" + (int)(Math.random() * 1000);
             }
 
@@ -40,8 +41,15 @@ public class NetworkHandler {
             new Thread(this::listenToServer).start();
 
         } catch (IOException e) {
-            JOptionPane.showMessageDialog(null, "Ne mogu da se povežem na server! Proveri da li je server pokrenut.", "Greška", JOptionPane.ERROR_MESSAGE);
-            System.exit(0);
+            int choice = JOptionPane.showConfirmDialog(null,
+                    "Server is not available. Try again?",
+                    "Connection Error",
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.ERROR_MESSAGE);
+            System.out.println("[CLIENT] Can't connect to server");
+            if (choice == JOptionPane.YES_OPTION) {
+                new NetworkHandler(host, port);
+            }
         }
     }
 
