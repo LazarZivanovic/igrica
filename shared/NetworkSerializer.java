@@ -18,6 +18,7 @@ public class NetworkSerializer {
     public void send(Message message) throws IOException{
         writer.writeObject(message);
         writer.flush();
+        writer.reset();
     }
 
     public Message receive() throws IOException, ClassNotFoundException{

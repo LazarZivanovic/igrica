@@ -17,27 +17,67 @@ public class GameState {
 
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
 
-    public synchronized void addPlayer(String name){
-        scores.put(name,0);
-        playerColors.put(name,nextColor.getAndIncrement());
-        System.out.println("[ GAMESTATE ] "+ name + " added, color: "+ (nextColor.get()-1));
+    public void addPlayer(String name){
+        lock.writeLock().lock();
+        try {
+            scores.put(name, 0);
+            if (!playerColors.containsKey(name)) {
+                playerColors.put(name, nextColor.getAndIncrement());
+            }
+        } finally {
+            lock.writeLock().unlock();
+        }
+    }
+
+    public void removePlayer(String name) {
+        lock.writeLock().lock();
+        try {
+            scores.remove(name);
+            playerColors.remove(name);
+        } finally {
+            lock.writeLock().unlock();
+        }
+    }
+
+    public Map<String, Integer> getPlayerColors(){
+        lock.readLock().lock();
+        try {
+            return new ConcurrentHashMap<>(playerColors);
+        } finally {
+            lock.readLock().unlock();
+        }
+    }
+
+    public Map<String, Integer> getScores(){
+        lock.readLock().lock();
+        try {
+            return new ConcurrentHashMap<>(scores);
+        } finally {
+            lock.readLock().unlock();
+        }
     }
 
     public boolean paintPixel(int row, int col, String playerName){
+        if (row < 0 || row >= Config.BOARD_SIZE || col < 0 || col >= Config.BOARD_SIZE) {
+            return false;
+        }
         lock.writeLock().lock();
         try{
-            int playerColor = playerColors.get(playerName);
+            Integer playerColor = playerColors.get(playerName);
+            if (playerColor == null) {
+                return false;
+            }
             int previousColor = board[row][col];
-            if (previousColor!=0){
+            if (previousColor != 0){
                 String previousPlayer = getPlayerByColor(previousColor);
-                if(previousPlayer!=null){
-                    scores.merge(previousPlayer,-1,Integer::sum);
+                if (previousPlayer != null){
+                    scores.merge(previousPlayer, -1, Integer::sum);
                 }
             }
             board[row][col] = playerColor;
-            scores.merge(playerName,1,Integer::sum);
+            scores.merge(playerName, 1, Integer::sum);
             return true;
-        }finally {
+        } finally {
             lock.writeLock().unlock();
         }
     }
@@ -46,23 +86,35 @@ public class GameState {
         lock.readLock().lock();
         try{
             int[][] copy = new int[Config.BOARD_SIZE][Config.BOARD_SIZE];
-            for (int i = 0; i<Config.BOARD_SIZE; i++){
+            for (int i = 0; i < Config.BOARD_SIZE; i++){
                 copy[i] = board[i].clone();
             }
             return copy;
-        }finally {
+        } finally {
             lock.readLock().unlock();
         }
     }
 
+    public void reset() {
+        lock.writeLock().lock();
+        try {
+            for (int[] row : board) {
+                java.util.Arrays.fill(row, 0);
+            }
+            scores.clear();
+            playerColors.clear();
+            nextColor.set(1);
+        } finally {
+            lock.writeLock().unlock();
+        }
+        System.out.println("[ GAMESTATE ] Board reset!");
+    }
+
     private String getPlayerByColor(int color){
         return playerColors.entrySet().stream()
-                .filter(e->e.getValue()==color)
+                .filter(e -> e.getValue() == color)
                 .map(Map.Entry::getKey)
                 .findFirst()
                 .orElse(null);
-    }
-    public Map<String, Integer> getScores(){
-        return new ConcurrentHashMap<>(scores);
     }
 }

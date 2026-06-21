@@ -1,43 +1,33 @@
 package client;
+
 import shared.Message;
+import shared.NetworkSerializer;
+import shared.Config;
 import client.ui.GameWindow;
 import javax.swing.*;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.net.Socket;
 
 public class NetworkHandler {
     private Socket socket;
-    private ObjectOutputStream out;
-    private ObjectInputStream in;
+    private NetworkSerializer serializer;
     private GameWindow gameWindow;
     private String myName;
 
     public NetworkHandler(String host, int port) {
         try {
-            // 1. Iskače prozor za ime čim se pokrene klijent
-            myName = JOptionPane.showInputDialog(null, "Unesi svoje ime:", "Prijava na server", JOptionPane.QUESTION_MESSAGE);
-            if (myName == null)return;
+            myName = JOptionPane.showInputDialog(null, "Enter your name:", "Login", JOptionPane.QUESTION_MESSAGE);
+            if (myName == null) return;
             if (myName.trim().isEmpty()) {
-                myName = "Igrač_" + (int)(Math.random() * 1000);
+                myName = "Player_" + (int)(Math.random() * 1000);
             }
 
-            // 2. Spajanje na socket
-            System.out.println("[KLIJENT] Povezivanje na server " + host + ":" + port + "...");
             socket = new Socket(host, port);
+            serializer = new NetworkSerializer(socket);
+            System.out.println("[CLIENT] Connected to server!");
 
-            out = new ObjectOutputStream(socket.getOutputStream());
-            in = new ObjectInputStream(socket.getInputStream());
-            System.out.println("[KLIJENT] Uspešno povezivanje! Otvaram prozor igre...");
-
-            // 3. Otvaramo prozor igre i prosleđujemo mu ovaj mrežni handler
             gameWindow = new GameWindow(this);
-
-            // 4. Šaljemo ime serveru
-            sendMessage(new Message(Message.Type.JOIN, myName));
-
-            // 5. Pokrećemo pozadinsku nit da sluša server
+            serializer.send(new Message(Message.Type.JOIN, myName));
             new Thread(this::listenToServer).start();
 
         } catch (IOException e) {
@@ -46,7 +36,6 @@ public class NetworkHandler {
                     "Connection Error",
                     JOptionPane.YES_NO_OPTION,
                     JOptionPane.ERROR_MESSAGE);
-            System.out.println("[CLIENT] Can't connect to server");
             if (choice == JOptionPane.YES_OPTION) {
                 new NetworkHandler(host, port);
             }
@@ -56,48 +45,84 @@ public class NetworkHandler {
     private void listenToServer() {
         try {
             while (true) {
-                Message msg = (Message) in.readObject();
+                Message msg = serializer.receive();
 
                 if (msg.getType() == Message.Type.UPDATE_GAME) {
-                    // Osvežavamo matricu piksela
-                    gameWindow.getPixelCanvas().updateGrid(msg.getGrid());
-
-                    // Osvežavamo tabelu sa skorovima
-                    gameWindow.getScorePanel().updateScores(msg.getScores());
-                }
+                    SwingUtilities.invokeLater(() -> {
+                        gameWindow.getPixelCanvas().updateGrid(msg.getGrid());
+                        gameWindow.getScorePanel().updateScores(msg.getScores(), msg.getPlayerColors());
+                    });
+                }else if (msg.getType() == Message.Type.TIMER) {
+                    SwingUtilities.invokeLater(() -> {
+                        gameWindow.updateTimer(msg.getRemainingTime());
+                        gameWindow.getPixelCanvas().startGame();
+                    });
+                } else if (msg.getType() == Message.Type.LOBBY_COUNTDOWN) {
+                    SwingUtilities.invokeLater(() ->
+                            gameWindow.showCountdown(msg.getRemainingTime()));
+                } else if (msg.getType() == Message.Type.GAME_OVER) {
+                    SwingUtilities.invokeLater(() -> {
+                        gameWindow.showGameOver(msg.getScores());
+                        int choice = JOptionPane.showConfirmDialog(
+                                gameWindow, "Play again?", "Rematch",
+                                JOptionPane.YES_NO_OPTION
+                        );
+                        if (choice == JOptionPane.YES_OPTION) {
+                            try {
+                                serializer.send(new Message(Message.Type.REMATCH_YES, myName));
+                                gameWindow.showWaitingForRematch();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        } else {
+                            try {
+                                serializer.send(new Message(Message.Type.REMATCH_NO, myName));
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                            System.exit(0);
+                        }
+                    });
+                } else if (msg.getType() == Message.Type.REMATCH_START) {
+                    SwingUtilities.invokeLater(gameWindow::resetForRematch);
+                }else if (msg.getType() == Message.Type.SPECTATE) {
+                    SwingUtilities.invokeLater(gameWindow::enterSpectatorMode);
+                } else if (msg.getType() == Message.Type.LOBBY_FULL) {
+                    SwingUtilities.invokeLater(() -> {
+                        JOptionPane.showMessageDialog(gameWindow,
+                                "Lobby is full. Please try again later.",
+                                "Cannot Join", JOptionPane.WARNING_MESSAGE);
+                        System.exit(0);
+                    });
+                }else if (msg.getType() == Message.Type.PLAYER_LEFT) {
+                    String nameToRemove = msg.getName();
+                    SwingUtilities.invokeLater(() -> {
+                    gameWindow.getScorePanel().removePlayer(nameToRemove);
+                });
+            }
             }
         } catch (Exception e) {
-            System.out.println("[KLIJENT] Veza sa serverom je prekinuta.");
+            System.out.println("[CLIENT] Connection lost.");
         } finally {
             closeAll();
         }
     }
 
     public void sendClick(int row, int col) {
-        Message clickMessage = new Message(Message.Type.CLICK, row, col);
-        sendMessage(clickMessage);
-    }
-
-    private synchronized void sendMessage(Message msg) {
         try {
-            out.writeObject(msg);
-            out.flush();
+            serializer.send(new Message(Message.Type.CLICK, row, col));
         } catch (IOException e) {
-            System.err.println("[KLIJENT] Greška pri slanju: " + e.getMessage());
+            System.err.println("[CLIENT] Send error: " + e.getMessage());
         }
     }
 
     private void closeAll() {
         try {
-            if (in != null) in.close();
-            if (out != null) out.close();
             if (socket != null) socket.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public String getMyName() {
-        return myName;
-    }
+    public String getMyName() { return myName; }
 }
