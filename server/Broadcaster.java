@@ -2,6 +2,7 @@ package server;
 
 import shared.Message;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -18,9 +19,19 @@ public class Broadcaster {
     }
 
     public void broadcast(Message message){
-        for(ClientHandler client: clients){
+        for (ClientHandler client : clients) {
             client.sendMessage(message);
         }
     }
+    public List<ClientHandler> getClients() {
+        return Collections.unmodifiableList(clients);
+    }
 
+    public int countActivePlayers() {
+        int count = 0;
+        for (ClientHandler client : clients) {
+            if (!client.isSpectator()) count++;
+        }
+        return count;
+    }
 }
