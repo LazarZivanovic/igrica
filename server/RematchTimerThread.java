@@ -31,27 +31,19 @@ public class RematchTimerThread implements Runnable {
 
             gameState.reset();
 
-            if (hasEnough) {
-                for (ClientHandler client : currentClients) {
-                    if (votedYes.contains(client)) {
-                        client.promoteToPlayer();
-                        client.sendMessage(new Message(Message.Type.REMATCH_START));
-                    } else {
-                        client.setSpectatorMode(true);
-                        client.sendMessage(new Message(Message.Type.SPECTATE));
-                    }
+            for (ClientHandler client : currentClients) {
+                if (votedYes.contains(client)) {
+                    client.promoteToPlayer();
+                    client.sendMessage(new Message(Message.Type.REMATCH_START));
+                } else {
+                    client.setSpectatorMode(true);
+                    client.sendMessage(new Message(Message.Type.SPECTATE));
                 }
+            }
+
+            if (hasEnough) {
                 System.out.println("[ SERVER ] Rematch confirmed with " + votedYes.size() + " players.");
             } else {
-                for (ClientHandler client : currentClients) {
-                    if (votedYes.contains(client)) {
-                        client.promoteToPlayer();
-                        client.sendMessage(new Message(Message.Type.REMATCH_START));
-                    } else {
-                        client.setSpectatorMode(true);
-                        client.sendMessage(new Message(Message.Type.SPECTATE));
-                    }
-                }
                 System.out.println("[ SERVER ] Not enough rematch votes. YES voters returned to lobby, others spectating.");
             }
 
